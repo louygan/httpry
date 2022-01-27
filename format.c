@@ -115,6 +115,7 @@ FORMAT_NODE *insert_field(char *name, size_t len) {
 #endif
 
         if ((node = get_field(name)) == NULL) {
+                // name does not exist in node
                 if ((node = (FORMAT_NODE *) malloc(sizeof(FORMAT_NODE))) == NULL)
                         LOG_DIE("Cannot allocate memory for new node");
 
@@ -141,6 +142,8 @@ FORMAT_NODE *insert_field(char *name, size_t len) {
         /* Update the linked list pointers */
         if (prev) prev->list = node;
         prev = node;
+
+        // if node is first one, set first node as head
         if (!head) head = node;
 
         return node;

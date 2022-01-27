@@ -168,8 +168,13 @@ void exit_rate_stats_thread() {
 void *run_stats (void *args) {
         struct thread_args *thread_args = (struct thread_args *) args;
 
+        struct timespec     wait, remain;
+            
+        wait.tv_sec = thread_args->rate_interval / 1000;
+        wait.tv_nsec = (thread_args->rate_interval %  1000) * 1000000;
+         
         while (1) {
-                sleep(thread_args->rate_interval/100);
+                nanosleep(&wait, &remain);
                 display_rate_stats(thread_args->use_infile, thread_args->rate_threshold);
         }
 

@@ -298,6 +298,7 @@ void parse_http_packet(u_char *args, const struct pcap_pkthdr *header, const u_c
         char *header_line, *req_value;
         char saddr[INET6_ADDRSTRLEN], daddr[INET6_ADDRSTRLEN];
         char sport[PORTSTRLEN], dport[PORTSTRLEN];
+        char dhost[INET6_ADDRSTRLEN + PORTSTRLEN + 10];
         char ts[MAX_TIME_LEN], fmt[MAX_TIME_LEN];
         int is_request = 0, is_response = 0;
         unsigned int eth_type = 0, offset;
@@ -350,36 +351,14 @@ void parse_http_packet(u_char *args, const struct pcap_pkthdr *header, const u_c
         if (size_data <= 0) return;
 
         /* Check if we appear to have a valid request or response */
-        if (is_request_method(data)) {
-                is_request = 1;
-        } else if (strncmp(data, HTTP_STRING, strlen(HTTP_STRING)) == 0) {
-                is_response = 1;
-        } else {
-                return;
-        }
+        //printf("data: %s\n", data);
+        //printf("data:\n");
 
         /* Copy packet data to editable buffer that was created in main() */
         if (size_data > BUFSIZ) size_data = BUFSIZ;
         memcpy(buf, data, size_data);
         buf[size_data] = '\0';
 
-        /* Parse header line, bail if malformed */
-        if ((header_line = parse_header_line(buf)) == NULL) return;
-
-        if (is_request) {
-                if (parse_client_request(header_line)) return;
-        } else if (is_response) {
-                if (parse_server_response(header_line)) return;
-        }
-
-        /* Iterate through request/entity header fields */
-        while ((header_line = parse_header_line(NULL)) != NULL) {
-                if ((req_value = strchr(header_line, ':')) == NULL) continue;
-                *req_value++ = '\0';
-                while (isspace(*req_value)) req_value++;
-
-                insert_value(header_line, req_value);
-        }
 
         /* Grab source/destination IP addresses */
         if (family == AF_INET) {
@@ -398,6 +377,11 @@ void parse_http_packet(u_char *args, const struct pcap_pkthdr *header, const u_c
         insert_value("source-port", sport);
         insert_value("dest-port", dport);
 
+
+        // not http reqeust, construct "host" from dest ip and port
+        snprintf(dhost, INET6_ADDRSTRLEN + PORTSTRLEN, "%s:%s", daddr, dport);
+        insert_value("host", dhost);
+
         /* Extract packet capture time */
         pkt_time = localtime((time_t *) &header->ts.tv_sec);
         strftime(fmt, sizeof(fmt), "%Y-%m-%d %H:%M:%S.%%03u", pkt_time);
@@ -405,7 +389,8 @@ void parse_http_packet(u_char *args, const struct pcap_pkthdr *header, const u_c
         insert_value("timestamp", ts);
 
         if (rate_stats) {
-                update_host_stats(get_value("host"), header->ts.tv_sec);
+                //printf("%s : %s\n", ts, dhost);
+                update_host_stats(dhost, header->ts.tv_sec);
                 clear_values();
         } else {
                 print_format_values();
@@ -613,16 +598,16 @@ void print_stats() {
                         return;
                 }
 
-                LOG_PRINT("%u packets received, %u packets dropped, %u http packets parsed", \
+                LOG_PRINT("%u packets received, %u packets dropped, %u packets parsed", \
                      pkt_stats.ps_recv, pkt_stats.ps_drop, num_parsed);
 
                 run_time = (float) (time(0) - start_time);
                 if (run_time > 0) {
-                        LOG_PRINT("%0.1f packets/min, %0.1f http packets/min", \
+                        LOG_PRINT("%0.1f packets/min, %0.1f parsed packets/min", \
                              ((pkt_stats.ps_recv * 60) / run_time), ((num_parsed * 60) / run_time));
                 }
         } else if (pcap_hnd) {
-                PRINT("%u http packets parsed", num_parsed);
+                PRINT("%u packets parsed", num_parsed);
         }
 
         return;

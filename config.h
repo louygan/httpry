@@ -17,7 +17,7 @@
 
 /* Default packet capture filter; must be a standard libpcap style filter
    *** Can be overridden */
-#define DEFAULT_CAPFILTER "tcp port 80 or 8080"
+#define DEFAULT_CAPFILTER "tcp"
 
 /* Default output format string; see doc/format-string for more information
    *** Can be overridden with -f */
@@ -34,9 +34,9 @@
    *** Can be overridden with -l */
 #define DEFAULT_RATE_THRESHOLD 2
 
-/* Default display interval for rate statistics
+/* Default display interval for rate statistics in ms
    *** Can be overridden with -t */
-#define DEFAULT_RATE_INTERVAL 5
+#define DEFAULT_RATE_INTERVAL 10
 
 /* Default location to store the PID file when running in daemon mode
    *** Can be overridden with -P */
