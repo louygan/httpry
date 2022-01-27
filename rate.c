@@ -16,6 +16,7 @@
 #include <pthread.h>
 #include <time.h>
 #include <unistd.h>
+#include <sys/time.h>
 #include "config.h"
 #include "error.h"
 #include "rate.h"
@@ -168,7 +169,7 @@ void *run_stats (void *args) {
         struct thread_args *thread_args = (struct thread_args *) args;
 
         while (1) {
-                sleep(thread_args->rate_interval);
+                sleep(thread_args->rate_interval/100);
                 display_rate_stats(thread_args->use_infile, thread_args->rate_threshold);
         }
 
@@ -177,6 +178,11 @@ void *run_stats (void *args) {
 
 /* Display the running average within each valid stats node */
 void display_rate_stats(char *use_infile, int rate_threshold) {
+
+        
+        struct timeval curTime;
+        gettimeofday(&curTime, NULL);
+        int milli = curTime.tv_usec / 1000;
         time_t now;
         char st_time[MAX_TIME_LEN];
         unsigned int delta, rps = 0;
@@ -229,9 +235,11 @@ void display_rate_stats(char *use_infile, int rate_threshold) {
                         } else {
                                 rps = 0;
                         }
-
-                        if (rps >= rate_threshold) {
-                                printf("%s%s%s%s%u rps\n", st_time, FIELD_DELIM, node->host, FIELD_DELIM, rps);
+                        if (node->count > 0 ) {
+                                printf("%s.%03i%s%s%s%u count\n", st_time, milli, FIELD_DELIM, node->host, FIELD_DELIM, node->count);
+                                node->count = 0;
+                        //if (rps >= rate_threshold) {
+                                //printf("%s%s%s%s%u rps\n", st_time, FIELD_DELIM, node->host, FIELD_DELIM, rps);
                                 prev = node;
                                 node = node->next;
                         } else {
@@ -241,10 +249,9 @@ void display_rate_stats(char *use_infile, int rate_threshold) {
         }
 
         /* Display rate totals */
-        delta = (unsigned int) (now - totals.first_packet);
-        if (delta > 0)
-                printf("%s%stotals%s%3.2f rps\n", st_time, FIELD_DELIM, FIELD_DELIM, (float) totals.count / delta);
-
+        //delta = (unsigned int) (now - totals.first_packet);
+        //if (delta > 0)
+        //        printf("%s%stotals%s%3.2f rps\n", st_time, FIELD_DELIM, FIELD_DELIM, (float) totals.count / delta);
         if (thread_created)
                 pthread_mutex_unlock(&stats_lock);
 
