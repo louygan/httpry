@@ -36,7 +36,7 @@
 
 /* Default display interval for rate statistics in ms
    *** Can be overridden with -t */
-#define DEFAULT_RATE_INTERVAL 10
+#define DEFAULT_RATE_INTERVAL 1
 
 /* Default location to store the PID file when running in daemon mode
    *** Can be overridden with -P */
@@ -56,5 +56,10 @@
 
 #define MAX_TIME_LEN 32
 #define PORTSTRLEN 6
+
+/* The MAX bucket size of timestamp statistic */
+#define MAX_BUCKET_SIZE 6000
+/* The MIN buckt slot in miliiseconds  */
+#define MIN_BUCKET_SLOT 10
 
 #endif /* ! _HAVE_CONFIG_H */

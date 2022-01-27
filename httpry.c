@@ -390,7 +390,7 @@ void parse_http_packet(u_char *args, const struct pcap_pkthdr *header, const u_c
 
         if (rate_stats) {
                 //printf("%s : %s\n", ts, dhost);
-                update_host_stats(dhost, header->ts.tv_sec);
+                update_host_stats(dhost, header->ts.tv_sec, header->ts);
                 clear_values();
         } else {
                 print_format_values();

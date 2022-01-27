@@ -10,4 +10,4 @@ WORKDIR /tmp
 
 COPY * /tmp/
 
-RUN mv Makefile.static Makefile; make
+RUN mv Makefile.static Makefile; make clean; make
