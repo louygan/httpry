@@ -14,7 +14,7 @@
 
 void init_rate_stats(int display_interval, char *use_infile, int rate_threshold);
 void cleanup_rate_stats();
-void display_rate_stats(char *use_infile, int rate_threshold);
+void display_rate_stats(char *use_infile, int rate_threshold, unsigned int rate_interval);
 void update_host_stats(char *host, time_t t, struct timeval time);
 
 #endif /* ! _HAVE_RATE_H */

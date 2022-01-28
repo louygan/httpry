@@ -590,7 +590,7 @@ void print_stats() {
         float run_time;
 
         if (rate_stats)
-                display_rate_stats(use_infile, rate_threshold);
+                display_rate_stats(use_infile, rate_threshold, rate_interval);
 
         if (pcap_hnd && !use_infile) {
                 if (pcap_stats(pcap_hnd, &pkt_stats) != 0) {
@@ -627,24 +627,23 @@ void display_usage() {
         display_banner();
 
         printf("Usage: %s [ -dFhpqs ] [-b file ] [ -f format ] [ -i device ] [ -l threshold ]\n"
-               "              [ -m methods ] [ -n count ] [ -o file ] [ -P file ] [ -r file ]\n"
-               "              [ -t seconds] [ -u user ] [ 'expression' ]\n\n", PROG_NAME);
+               "              [ -n count ] [ -o file ] [ -P file ] [ -r file ] [ -t seconds] \n"
+               "              [ -u user ] [ 'expression' ]\n\n", PROG_NAME);
 
-        printf("   -b file      write HTTP packets to a binary dump file\n"
+        printf("   -b file      write packets to a binary dump file\n"
                "   -d           run as daemon\n"
                "   -f format    specify output format string\n"
                "   -F           force output flush\n"
                "   -h           print this help information\n"
                "   -i device    listen on this interface\n"
-               "   -l threshold specify a rps threshold for rate statistics\n"
-               "   -m methods   specify request methods to parse\n"
-               "   -n count     set number of HTTP packets to parse\n"
+               "   -l threshold specify a count threshold for rate statistics\n"
+               "   -n count     set number of packets to parse\n"
                "   -o file      write output to a file\n"
                "   -p           disable promiscuous mode\n"
                "   -P file      use custom PID filename when running in daemon mode \n"
                "   -q           suppress non-critical output\n"
                "   -r file      read packets from input file\n"
-               "   -s           run in HTTP requests per second mode\n"
+               "   -s           run in rate statistic mode\n"
                "   -t seconds   specify the display interval for rate statistics\n"
                "   -u user      set process owner\n"
                "   expression   specify a bpf-style capture filter with quote, e.g 'tcp and dst host xxx'\n\n");

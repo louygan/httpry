@@ -32,11 +32,11 @@
 
 /* Default threshold for displaying rps in rate statistics mode
    *** Can be overridden with -l */
-#define DEFAULT_RATE_THRESHOLD 2
+#define DEFAULT_RATE_THRESHOLD 1
 
 /* Default display interval for rate statistics in ms
    *** Can be overridden with -t */
-#define DEFAULT_RATE_INTERVAL 1
+#define DEFAULT_RATE_INTERVAL 5
 
 /* Default location to store the PID file when running in daemon mode
    *** Can be overridden with -P */

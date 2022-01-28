@@ -29,8 +29,6 @@
 
 
 struct timestamp_bucket {
-        // timestamp diff in milliseconds
-        unsigned int timestamp_diff;
         unsigned int count;
 };
 
@@ -41,7 +39,7 @@ struct host_stats {
         time_t last_packet;
         struct timeval timestamp_first;
         // timestamp bucket based on timestamp_first
-        struct timestamp_bucket timestamp[MAX_BUCKET_SIZE];
+        struct timestamp_bucket timestamp[MAX_BUCKET_SIZE+1];
         struct host_stats *next;
 };
 
@@ -186,14 +184,14 @@ void *run_stats (void *args) {
         while (1) {
                 //nanosleep(&wait, &remain);
                 sleep(thread_args->rate_interval);
-                display_rate_stats(thread_args->use_infile, thread_args->rate_threshold);
+                display_rate_stats(thread_args->use_infile, thread_args->rate_threshold, thread_args->rate_interval);
         }
 
         return (void *) 0;
 }
 
 /* Display the running average within each valid stats node */
-void display_rate_stats(char *use_infile, int rate_threshold) {
+void display_rate_stats(char *use_infile, int rate_threshold, unsigned int rate_interval) {
 
         struct tm *pkt_time;
         char ts[MAX_TIME_LEN], fmt[MAX_TIME_LEN];
@@ -201,11 +199,15 @@ void display_rate_stats(char *use_infile, int rate_threshold) {
         struct timeval curTime;
         gettimeofday(&curTime, NULL);
         int milli = curTime.tv_usec / 1000;
+        
         time_t now;
         char st_time[MAX_TIME_LEN];
         unsigned int delta, rps = 0;
         int i;
         struct host_stats *node, *prev;
+        int maxslot = ( rate_interval * 1000 / MIN_BUCKET_SLOT ) + 1;
+        if ( maxslot > MAX_BUCKET_SIZE )
+            maxslot = MAX_BUCKET_SIZE;
 
         if (stats == NULL) return;
 
@@ -254,22 +256,29 @@ void display_rate_stats(char *use_infile, int rate_threshold) {
                                 rps = 0;
                         }
                         if (node->count > 0 ) {
-                                printf("%s.%03i%s%s%s%u count\n", st_time, milli, FIELD_DELIM, node->host, FIELD_DELIM, node->count);
-				printf("buckets of previous packets:\n");
+                                //printf("%s.%03i%s%s%s%u count\n", st_time, milli, FIELD_DELIM, node->host, FIELD_DELIM, node->count);
 
-                                pkt_time = localtime((time_t *)node->timestamp_first.tv_sec);
-                                //strftime(fmt, sizeof(fmt), "%Y-%m-%d %H:%M:%S.%%03u", pkt_time);
-                                //snprintf(ts, sizeof(ts), fmt, node->timestamp_first.tv_usec / 1000);
-                                //printf("\t%s\n",ts); 
-                                for ( int i = 0; i < MAX_BUCKET_SIZE; i++ ) {
-                                    if ( node->timestamp[i].count > 0 ) {
-                                       	printf("\t%+05dms\t\t%0d\n", i*MIN_BUCKET_SLOT, node->timestamp[i].count);
+                                pkt_time = localtime((time_t*) &node->timestamp_first.tv_sec);
+                                strftime(fmt, sizeof(fmt), "%Y-%m-%d %H:%M:%S.%%03u", pkt_time);
+                                snprintf(ts, sizeof(ts), fmt, node->timestamp_first.tv_usec / 1000);
+                                int first = 1; 
+                                for ( int i = 0; i < maxslot; i++ ) {
+                                    if ( node->timestamp[i].count > rate_threshold ) {
+                                        if ( first == 1 ) {
+                                            printf("%s.%03i%s%s%s%u count\n", st_time, milli, FIELD_DELIM, node->host, FIELD_DELIM, node->count);
+				            printf("buckets of previous packets:\n");
+                                       	    printf("%s\n", ts);
+                                       	    printf("\t\t%+05dms\t\t%0d\n", i*MIN_BUCKET_SLOT, node->timestamp[i].count);
+                                            first = 0;
+                                        }
+                                        else
+                                       	    printf("\t\t%+05dms\t\t%0d\n", i*MIN_BUCKET_SLOT, node->timestamp[i].count);
                                     }
                                 }
 
                                 node->count = 0;
                                 node->first_packet = 0;
-                                for ( int i = 0; i < MAX_BUCKET_SIZE; i++ ) {
+                                for ( int i = 0; i < maxslot; i++ ) {
                                     node->timestamp[i].count = 0;
                                 }
 				
