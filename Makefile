@@ -7,7 +7,7 @@
 #
 
 CC		= gcc
-CCFLAGS  	= -Wall -O3 -funroll-loops -I/usr/include/pcap -I/usr/local/include/pcap
+CCFLAGS  	= -Wall -Wno-unused-variable -Wno-unused-but-set-variable -O3 -funroll-loops -I/usr/include/pcap -I/usr/local/include/pcap
 DEBUGFLAGS	= -Wall -g -DDEBUG -I/usr/include/pcap -I/usr/local/include/pcap
 LIBS		= -lpcap -lm -pthread
 PROG		= httpry

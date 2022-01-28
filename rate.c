@@ -195,7 +195,9 @@ void *run_stats (void *args) {
 /* Display the running average within each valid stats node */
 void display_rate_stats(char *use_infile, int rate_threshold) {
 
-        
+        struct tm *pkt_time;
+        char ts[MAX_TIME_LEN], fmt[MAX_TIME_LEN];
+       
         struct timeval curTime;
         gettimeofday(&curTime, NULL);
         int milli = curTime.tv_usec / 1000;
@@ -253,10 +255,15 @@ void display_rate_stats(char *use_infile, int rate_threshold) {
                         }
                         if (node->count > 0 ) {
                                 printf("%s.%03i%s%s%s%u count\n", st_time, milli, FIELD_DELIM, node->host, FIELD_DELIM, node->count);
-				printf("timestamp bucket of previous:\n");
+				printf("buckets of previous packets:\n");
+
+                                pkt_time = localtime((time_t *)node->timestamp_first.tv_sec);
+                                //strftime(fmt, sizeof(fmt), "%Y-%m-%d %H:%M:%S.%%03u", pkt_time);
+                                //snprintf(ts, sizeof(ts), fmt, node->timestamp_first.tv_usec / 1000);
+                                //printf("\t%s\n",ts); 
                                 for ( int i = 0; i < MAX_BUCKET_SIZE; i++ ) {
                                     if ( node->timestamp[i].count > 0 ) {
-                                       	printf("\t%d\t%0d\n", i*MIN_BUCKET_SLOT, node->timestamp[i].count);
+                                       	printf("\t%+05dms\t\t%0d\n", i*MIN_BUCKET_SLOT, node->timestamp[i].count);
                                     }
                                 }
 

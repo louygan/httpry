@@ -295,12 +295,12 @@ void change_user(char *name) {
 /* Process each packet that passes the capture filter */
 void parse_http_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *pkt) {
         struct tm *pkt_time;
-        char *header_line, *req_value;
+        //char *header_line, *req_value;
         char saddr[INET6_ADDRSTRLEN], daddr[INET6_ADDRSTRLEN];
         char sport[PORTSTRLEN], dport[PORTSTRLEN];
         char dhost[INET6_ADDRSTRLEN + PORTSTRLEN + 10];
         char ts[MAX_TIME_LEN], fmt[MAX_TIME_LEN];
-        int is_request = 0, is_response = 0;
+        //int is_request = 0, is_response = 0;
         unsigned int eth_type = 0, offset;
 
         const struct eth_header *eth;
@@ -647,7 +647,7 @@ void display_usage() {
                "   -s           run in HTTP requests per second mode\n"
                "   -t seconds   specify the display interval for rate statistics\n"
                "   -u user      set process owner\n"
-               "   expression   specify a bpf-style capture filter\n\n");
+               "   expression   specify a bpf-style capture filter with quote, e.g 'tcp and dst host xxx'\n\n");
 
         printf("Additional information can be found at:\n"
                "   http://dumpsterventures.com/jason/httpry\n\n");
@@ -703,11 +703,17 @@ int main(int argc, char **argv) {
         if (rate_threshold < 1)
                 LOG_DIE("Invalid -l value, must be 1 or greater");
 
+        /* echo all command-line args */
+	//for (int i = 0; i < argc; i++)		
+	//	printf("argv[%d]: %s\n", i, argv[i]);
+
+        //printf("opind = %d\n", optind);
         if (argv[optind] && *(argv[optind])) {
                 capfilter = argv[optind];
         } else {
                 capfilter = default_capfilter;
         }
+        printf("Using capfiter : %s\n", capfilter);
 
         if (!format_str) format_str = default_format;
         if (rate_stats) format_str = rate_format;
