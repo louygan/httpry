@@ -10,7 +10,7 @@ CC		= gcc
 CCFLAGS  	= -Wall -Wno-unused-variable -Wno-unused-but-set-variable -O3 -funroll-loops -I/usr/include/pcap -I/usr/local/include/pcap
 DEBUGFLAGS	= -Wall -g -DDEBUG -I/usr/include/pcap -I/usr/local/include/pcap
 LIBS		= -lpcap -lm -pthread
-PROG		= httpry
+PROG		= packetstat
 FILES		= httpry.c format.c methods.c utility.c rate.c
 
 .PHONY: all debug profile install uninstall clean
