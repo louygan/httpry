@@ -58,7 +58,7 @@
 #define PORTSTRLEN 6
 
 /* The MAX bucket size of timestamp statistic */
-#define MAX_BUCKET_SIZE 6000
+#define MAX_BUCKET_SIZE 12000
 /* The MIN buckt slot in miliiseconds  */
 #define MIN_BUCKET_SLOT 10
 

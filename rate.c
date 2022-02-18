@@ -40,6 +40,7 @@ struct host_stats {
         struct timeval timestamp_first;
         // timestamp bucket based on timestamp_first
         struct timestamp_bucket timestamp[MAX_BUCKET_SIZE+1];
+        unsigned int max_slot;
         struct host_stats *next;
 };
 
@@ -205,9 +206,6 @@ void display_rate_stats(char *use_infile, int rate_threshold, unsigned int rate_
         unsigned int delta, rps = 0;
         int i;
         struct host_stats *node, *prev;
-        int maxslot = ( rate_interval * 1000 / MIN_BUCKET_SLOT ) + 1;
-        if ( maxslot > MAX_BUCKET_SIZE )
-            maxslot = MAX_BUCKET_SIZE;
 
         if (stats == NULL) return;
 
@@ -262,7 +260,7 @@ void display_rate_stats(char *use_infile, int rate_threshold, unsigned int rate_
                                 strftime(fmt, sizeof(fmt), "%Y-%m-%d %H:%M:%S.%%03u", pkt_time);
                                 snprintf(ts, sizeof(ts), fmt, node->timestamp_first.tv_usec / 1000);
                                 int first = 1; 
-                                for ( int i = 0; i < maxslot; i++ ) {
+                                for ( int i = 0; i < node->max_slot; i++ ) {
                                     if ( node->timestamp[i].count > rate_threshold ) {
                                         if ( first == 1 ) {
                                             printf("%s.%03i%s%s%s%u count\n", st_time, milli, FIELD_DELIM, node->host, FIELD_DELIM, node->count);
@@ -278,7 +276,7 @@ void display_rate_stats(char *use_infile, int rate_threshold, unsigned int rate_
 
                                 node->count = 0;
                                 node->first_packet = 0;
-                                for ( int i = 0; i < maxslot; i++ ) {
+                                for ( int i = 0; i < node->max_slot; i++ ) {
                                     node->timestamp[i].count = 0;
                                 }
 				
@@ -351,13 +349,14 @@ void update_host_stats(char *host, time_t t, struct timeval time) {
                 hashval = hash_str(host, HASHSIZE);
 
 #ifdef DEBUG
-        ASSERT((hashval >= 0) && (hashval < HASHSIZE));
+                ASSERT((hashval >= 0) && (hashval < HASHSIZE));
 #endif
 
                 str_copy(node->host, host, MAX_HOST_LEN);
                 node->count = 0;
                 node->first_packet = t;
                 node->timestamp_first = time;
+                node->max_slot = 0;
 
                 /* Link node into hash */
                 node->next = stats[hashval];
@@ -367,14 +366,23 @@ void update_host_stats(char *host, time_t t, struct timeval time) {
         if (node->first_packet == 0) {
                 node->first_packet = t;
                 node->timestamp_first = time;
+                node->max_slot = 0;
         }
         node->last_packet = t;
 
 	// calculate time differrence in milliseconds
-        timestamp_diff = ( time.tv_sec - node->timestamp_first.tv_sec ) * 1000 + ( time.tv_usec - node->timestamp_first.tv_usec ) / 1000  ;
-	//printf("Timestamp diff %d\n", timestamp_diff);
+        timestamp_diff = ( time.tv_sec - node->timestamp_first.tv_sec ) * 1000 
+                        + ( time.tv_usec - node->timestamp_first.tv_usec ) / 1000  ;
+
+        //printf("Timestamp diff %d\n", timestamp_diff);
 	// the mim bucket is 10 milliseconds
-        node->timestamp[timestamp_diff / MIN_BUCKET_SLOT].count++;
+        unsigned int slot = (unsigned int)(timestamp_diff / MIN_BUCKET_SLOT);
+        if ( slot <= MAX_BUCKET_SIZE ) {
+            if ( slot > node->max_slot )
+                node->max_slot = slot;
+            node->timestamp[slot].count++;
+        }
+
         node->count++;
 
         if (totals.first_packet == 0)
