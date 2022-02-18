@@ -616,8 +616,10 @@ void print_stats() {
 /* Display startup/informational banner */
 void display_banner() {
         PRINT("%s version %s -- "
-              "HTTP logging and information retrieval tool", PROG_NAME, PROG_VER);
-        PRINT("Copyright (c) 2005-2014 Jason Bittel <jason.bittel@gmail.com>");
+              "packet statistics tool", PROG_NAME, PROG_VER);
+        PRINT("based on httpry 0.1.8 by Jason Bittel");
+        PRINT("Copyright (c) 2022-2022 luke<740710@gmail.com>");
+        PRINT("");
 
         return;
 }
@@ -647,9 +649,6 @@ void display_usage() {
                "   -t seconds   specify the display interval for rate statistics\n"
                "   -u user      set process owner\n"
                "   expression   specify a bpf-style capture filter with quote, e.g 'tcp and dst host xxx'\n\n");
-
-        printf("Additional information can be found at:\n"
-               "   http://dumpsterventures.com/jason/httpry\n\n");
 
         exit(EXIT_SUCCESS);
 }

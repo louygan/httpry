@@ -12,8 +12,8 @@
 #ifndef _HAVE_CONFIG_H
 #define _HAVE_CONFIG_H
 
-#define PROG_NAME "httpry"
-#define PROG_VER "0.1.8"
+#define PROG_NAME "packetstat"
+#define PROG_VER "1.0.0"
 
 /* Default packet capture filter; must be a standard libpcap style filter
    *** Can be overridden */
@@ -40,7 +40,7 @@
 
 /* Default location to store the PID file when running in daemon mode
    *** Can be overridden with -P */
-#define PID_FILENAME "/var/run/httpry.pid"
+#define PID_FILENAME "/var/run/packetstat.pid"
 
 /* Where to send unnecessary output */
 #define NULL_FILE "/dev/null"
