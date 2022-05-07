@@ -784,6 +784,9 @@ int main(int argc, char **argv) {
         init_rate_stats(rate_interval, use_infile, rate_threshold);
 
     start_time = time(0);
+
+    // the callback parse_http_packet will be called when every packet
+    // captured.
     loop_status = pcap_loop(pcap_hnd, -1, &parse_http_packet, NULL);
     if (loop_status == -1) {
         LOG_DIE("Problem reading packets from interface: %s", pcap_geterr(pcap_hnd));
